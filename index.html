@@ -156,6 +156,61 @@
             </div>
         </section>
 
+        <!-- ========================================================= -->
+        <!-- Employee Eid Holiday Work Preference Bar (UNLOCKED ROW ONLY) -->
+        <!-- ========================================================= -->
+        <section id="employeeEidPreferenceBar" class="hidden bg-white rounded-2xl p-3.5 border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-4 no-print">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-lg shrink-0">
+                    🌙
+                </div>
+                <div class="min-w-0">
+                    <h2 id="eidPrefTitle" class="text-xs sm:text-sm font-extrabold text-slate-900">
+                        Eid Holiday Work Preference (2027)
+                    </h2>
+                    <p class="text-[11px] text-slate-500 mt-0.5">
+                        Indicate your willingness to work during Eid Al-Fitr and Eid Al-Adha holidays.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Eid Al-Fitr Card -->
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex flex-col gap-2 min-w-[250px]">
+                    <div class="text-xs font-extrabold text-slate-800">
+                        Eid Al-Fitr <span class="font-semibold text-slate-500">(عيد الفطر)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" data-action="set-eid-pref" data-holiday="fitr" data-value="willing" id="btnEidFitrWilling"
+                            class="flex-1 px-3 py-1.5 rounded-lg border text-xs font-bold transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+                            ✓ Willing to Work
+                        </button>
+                        <button type="button" data-action="set-eid-pref" data-holiday="fitr" data-value="off" id="btnEidFitrOff"
+                            class="flex-1 px-3 py-1.5 rounded-lg border text-xs font-bold transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+                            ✗ Prefer Off
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Eid Al-Adha Card -->
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex flex-col gap-2 min-w-[250px]">
+                    <div class="text-xs font-extrabold text-slate-800">
+                        Eid Al-Adha <span class="font-semibold text-slate-500">(عيد الأضحى)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" data-action="set-eid-pref" data-holiday="adha" data-value="willing" id="btnEidAdhaWilling"
+                            class="flex-1 px-3 py-1.5 rounded-lg border text-xs font-bold transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+                            ✓ Willing to Work
+                        </button>
+                        <button type="button" data-action="set-eid-pref" data-holiday="adha" data-value="off" id="btnEidAdhaOff"
+                            class="flex-1 px-3 py-1.5 rounded-lg border text-xs font-bold transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50">
+                            ✗ Prefer Off
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- 12-Month Navigation Tabs (Visible to Everyone) -->
         <section class="bg-white rounded-2xl p-2.5 border border-slate-200 shadow-xs flex items-center justify-between gap-2 no-print">
             <button type="button" data-action="prev-month" class="px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold transition shrink-0">
@@ -283,7 +338,7 @@
         </div>
     </div>
 
-    <!-- 5. Admin Employee Management Modal (Name, Work Email, Individual Lock, PIN, Outlook Dispatch, Delete) -->
+    <!-- 5. Admin Employee Management Modal (Name, Work Email, Individual Lock, PIN, Outlook Dispatch, Reset Eid, Delete) -->
     <div id="editEmpModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-xl border border-slate-200 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -331,10 +386,13 @@
                     </button>
                 </div>
 
-                <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
-                    <div class="flex items-center gap-1.5">
+                <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 flex-wrap">
+                    <div class="flex items-center gap-1.5 flex-wrap">
                         <button type="button" data-action="reset-emp-pin-modal" class="px-2.5 py-2 rounded-xl text-[11px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200">
                             Clear PIN
+                        </button>
+                        <button type="button" data-action="reset-emp-eid-modal" class="px-2.5 py-2 rounded-xl text-[11px] font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            Reset Eid Choices
                         </button>
                         <button type="button" data-action="delete-emp-modal" id="deleteEmpModalBtn" class="px-2.5 py-2 rounded-xl text-[11px] font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200">
                             Delete
@@ -552,7 +610,9 @@
                     email: "",
                     pin: null,
                     locked: false,
-                    exemptBlocks: {}
+                    exemptBlocks: {},
+                    eidFitr: null,
+                    eidAdha: null
                 });
             }
             return list;
@@ -657,6 +717,10 @@
             return out;
         }
 
+        function normalizeEidPref(val) {
+            return (val === "willing" || val === "off") ? val : null;
+        }
+
         function applyPayloadToState(data) {
             if (!data || typeof data !== "object") return;
 
@@ -668,7 +732,9 @@
                     const pin = (emp.pin && /^\d{4}$/.test(String(emp.pin))) ? String(emp.pin) : null;
                     const locked = Boolean(emp.locked);
                     const exemptBlocks = normalizeBoolDateMap(emp.exemptBlocks || emp.exemptDates);
-                    return { id, name, email, pin, locked, exemptBlocks };
+                    const eidFitr = normalizeEidPref(emp.eidFitr);
+                    const eidAdha = normalizeEidPref(emp.eidAdha);
+                    return { id, name, email, pin, locked, exemptBlocks, eidFitr, eidAdha };
                 });
             }
 
@@ -784,7 +850,9 @@
                     email: emp.email || "",
                     pin: emp.pin || null,
                     locked: Boolean(emp.locked),
-                    exemptBlocks: emp.exemptBlocks || {}
+                    exemptBlocks: emp.exemptBlocks || {},
+                    eidFitr: normalizeEidPref(emp.eidFitr),
+                    eidAdha: normalizeEidPref(emp.eidAdha)
                 })),
                 entries: state.entries || {},
                 globalBlocks: state.globalBlocks || {},
@@ -1329,16 +1397,16 @@
             }
             const pin = emp.pin;
             const recipient = emp.email ? emp.email.trim() : "";
-            const subject = encodeURIComponent("2027 Annual Leave Planner - Personal PIN");
+            const subject = encodeURIComponent("2027 Annual Leave Planner - Personal Access PIN");
             const plannerUrl = window.location.href.split("#")[0];
             const bodyText =
-                `Hello ${emp.name},\n` +
+                `Hello ${emp.name},\n\n` +
                 `Your personal 4-digit PIN for the 2027 Annual Leave Planner is: ${pin}\n` +
-                `Planner Link: ${plannerUrl}\n` +
+                `Planner Link: ${plannerUrl}\n\n` +
                 `Instructions:\n` +
                 `1. Open the planner link above and locate your name.\n` +
                 `2. Click on your row and enter your 4-digit PIN (${pin}).\n` +
-                `3. Click any available working day to automatically book 10 consecutive working days.\n` +
+                `3. Click any available working day to automatically book 10 consecutive working days.\n\n` +
                 `Regards,`;
             const body = encodeURIComponent(bodyText);
             const mailtoUrl = `mailto:${recipient}?subject=${subject}&body=${body}`;
@@ -1394,8 +1462,43 @@
         function renderAll() {
             computeDailySummary();
             renderToolbarsAndAdminPanels();
+            renderEidPreferenceBar();
             renderMonthTabs();
             renderCalendarTable();
+        }
+
+        function renderEidPreferenceBar() {
+            const bar = document.getElementById("employeeEidPreferenceBar");
+            const titleEl = document.getElementById("eidPrefTitle");
+            if (!bar || !titleEl) return;
+
+            if (state.isAdmin || state.unlockedEmpId === null) {
+                bar.classList.add("hidden");
+                return;
+            }
+
+            const emp = state.employees.find(e => e.id === state.unlockedEmpId);
+            if (!emp) {
+                bar.classList.add("hidden");
+                return;
+            }
+
+            bar.classList.remove("hidden");
+            titleEl.innerHTML = `Eid Holiday Work Preference (2027) — <span class="text-sky-600">${escapeHtml(emp.name)}</span>`;
+
+            const baseCls = "flex-1 px-3 py-1.5 rounded-lg border text-xs font-bold transition bg-white text-slate-700 border-slate-200 hover:bg-slate-50";
+            const willingActiveCls = "flex-1 px-3 py-1.5 rounded-lg border text-xs font-bold transition bg-emerald-600 text-white border-emerald-600 shadow-xs";
+            const offActiveCls = "flex-1 px-3 py-1.5 rounded-lg border text-xs font-bold transition bg-rose-600 text-white border-rose-600 shadow-xs";
+
+            const btnFitrW = document.getElementById("btnEidFitrWilling");
+            const btnFitrO = document.getElementById("btnEidFitrOff");
+            const btnAdhaW = document.getElementById("btnEidAdhaWilling");
+            const btnAdhaO = document.getElementById("btnEidAdhaOff");
+
+            if (btnFitrW) btnFitrW.className = emp.eidFitr === "willing" ? willingActiveCls : baseCls;
+            if (btnFitrO) btnFitrO.className = emp.eidFitr === "off" ? offActiveCls : baseCls;
+            if (btnAdhaW) btnAdhaW.className = emp.eidAdha === "willing" ? willingActiveCls : baseCls;
+            if (btnAdhaO) btnAdhaO.className = emp.eidAdha === "off" ? offActiveCls : baseCls;
         }
 
         function renderToolbarsAndAdminPanels() {
@@ -1457,9 +1560,13 @@
             let totalTrainingDays = 0;
             let totalCustomDays = 0;
             let lockedEmployeesCount = 0;
+            let eidFitrWillingCount = 0;
+            let eidAdhaWillingCount = 0;
 
             state.employees.forEach(emp => {
                 if (state.globalLock || emp.locked) lockedEmployeesCount++;
+                if (emp.eidFitr === "willing") eidFitrWillingCount++;
+                if (emp.eidAdha === "willing") eidAdhaWillingCount++;
                 const row = state.entries[String(emp.id)] || {};
                 for (const dateStr of Object.keys(row)) {
                     const item = row[dateStr];
@@ -1505,11 +1612,11 @@
 
                 <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-xs flex items-center justify-between">
                     <div>
-                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Training &amp; Other Status</p>
-                        <p class="text-xl font-black text-slate-900 mt-0.5">${totalTrainingDays} <span class="text-xs font-bold text-slate-500">T</span> <span class="text-slate-300">|</span> ${totalCustomDays} <span class="text-xs font-bold text-slate-500">Custom</span></p>
-                        <p class="text-[11px] font-semibold text-slate-500 mt-0.5">Excluded from 22d quota</p>
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Eid Work &amp; Other Status</p>
+                        <p class="text-sm font-black text-emerald-700 mt-1">Fitr: ${eidFitrWillingCount} <span class="text-slate-300">|</span> Adha: ${eidAdhaWillingCount}</p>
+                        <p class="text-[11px] font-semibold text-slate-500 mt-0.5">${totalTrainingDays} T • ${totalCustomDays} Custom</p>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-sm">T</div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-black text-base">🌙</div>
                 </div>
             `;
 
@@ -1603,7 +1710,7 @@
             html += `
                 <button type="button" data-action="set-admin-brush" data-brush="CLEAR"
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition ${clearCls}">
-                    <span>Clear</span>
+                    <span>Eraser</span>
                 </button>
             `;
 
@@ -1779,6 +1886,7 @@
                     : "bg-slate-50 text-slate-600 border-slate-200 font-bold";
 
                 let adminRowControls = "";
+                let adminEidBadges = "";
                 if (state.isAdmin) {
                     const pinLabel = emp.pin ? `PIN: ${escapeHtml(emp.pin)}` : "No PIN";
                     const pinCls = emp.pin
@@ -1788,6 +1896,23 @@
                     const lockCls = emp.locked
                         ? "bg-amber-100 text-amber-900 border-amber-300"
                         : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100";
+
+                    const fitrSym = emp.eidFitr === "willing" ? "✓" : (emp.eidFitr === "off" ? "✗" : "-");
+                    const fitrCls = emp.eidFitr === "willing"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        : (emp.eidFitr === "off" ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-slate-50 text-slate-400 border-slate-200");
+
+                    const adhaSym = emp.eidAdha === "willing" ? "✓" : (emp.eidAdha === "off" ? "✗" : "-");
+                    const adhaCls = emp.eidAdha === "willing"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        : (emp.eidAdha === "off" ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-slate-50 text-slate-400 border-slate-200");
+
+                    adminEidBadges = `
+                        <div class="flex items-center gap-1 mt-0.5">
+                            <span class="px-1 rounded border text-[8px] font-extrabold ${fitrCls}">Fitr: ${fitrSym}</span>
+                            <span class="px-1 rounded border text-[8px] font-extrabold ${adhaCls}">Adha: ${adhaSym}</span>
+                        </div>
+                    `;
 
                     adminRowControls = `
                         <button type="button" data-action="admin-edit-emp" data-emp="${emp.id}"
@@ -1820,12 +1945,13 @@
                                 <div class="min-w-0 flex-1">
                                     <div class="text-xs font-bold text-slate-900 truncate">${escapeHtml(emp.name)}</div>
                                     ${state.isAdmin && emp.email ? `<div class="text-[9px] font-medium text-slate-400 truncate">${escapeHtml(emp.email)}</div>` : ""}
+                                    ${adminEidBadges}
                                 </div>
                             </div>
                             <div class="flex items-center gap-1 shrink-0">
                                 ${adminRowControls}
                                 <span class="min-w-[28px] px-1 py-0.5 rounded border text-[9px] font-black text-center ${usedCls}" title="Used Working Days">
-                                    ${annualUsed}/${MAX_BALANCE}
+                                    ${annualUsed} d
                                 </span>
                                 <span class="px-1.5 py-0.5 rounded border text-[9px] ${remCls}" title="Remaining Quota">
                                     ${remaining} left
@@ -1944,7 +2070,7 @@
 
         function copyAllPinsToClipboard() {
             const lines = [
-                "2027 Annual Leave Planner (Company B) — Employee PIN Directory",
+                "2027 Annual Leave Planner — Employee PIN Directory",
                 `Planner Link: ${window.location.href.split("#")[0]}`,
                 "--------------------------------------------------"
             ];
@@ -2008,7 +2134,7 @@
         }
 
         function exportToCSV() {
-            let csv = "\uFEFFID,Employee Name,Work Email,PIN Status,Lock Status,Annual Leave Used,Remaining Quota,Training Days,Custom Status Days,Annual Leave Dates,Training Dates,Custom Status Dates\n";
+            let csv = "\uFEFFID,Employee Name,Work Email,PIN Status,Lock Status,Eid Al-Fitr,Eid Al-Adha,Annual Leave Used,Remaining Quota,Training Days,Custom Status Days,Annual Leave Dates,Training Dates,Custom Status Dates\n";
 
             state.employees.forEach(emp => {
                 const row = state.entries[String(emp.id)] || {};
@@ -2035,8 +2161,10 @@
                 const remaining = Math.max(0, MAX_BALANCE - used);
                 const lockText = (state.globalLock || emp.locked) ? "Locked" : "Open";
                 const pinText = emp.pin ? emp.pin : "Unset";
+                const fitrText = emp.eidFitr === "willing" ? "Willing to Work" : (emp.eidFitr === "off" ? "Prefer Off" : "Unset");
+                const adhaText = emp.eidAdha === "willing" ? "Willing to Work" : (emp.eidAdha === "off" ? "Prefer Off" : "Unset");
 
-                csv += `${emp.id},"${emp.name.replace(/"/g, '""')}","${(emp.email || "").replace(/"/g, '""')}","${pinText}","${lockText}",${used},${remaining},${trainingDates.length},${customDates.length},"${leaveDates.join(" | ") || "None"}","${trainingDates.join(" | ") || "None"}","${customDates.join(" | ") || "None"}"\n`;
+                csv += `${emp.id},"${emp.name.replace(/"/g, '""')}","${(emp.email || "").replace(/"/g, '""')}","${pinText}","${lockText}","${fitrText}","${adhaText}",${used},${remaining},${trainingDates.length},${customDates.length},"${leaveDates.join(" | ") || "None"}","${trainingDates.join(" | ") || "None"}","${customDates.join(" | ") || "None"}"\n`;
             });
 
             // Append Chronological Priority Order Table
@@ -2070,6 +2198,28 @@
 
             if (action === "close-modal") {
                 closeModal(actionEl.dataset.modal);
+            } else if (action === "set-eid-pref") {
+                if (state.isAdmin || state.unlockedEmpId === null) return;
+                const emp = state.employees.find(item => item.id === state.unlockedEmpId);
+                if (!emp) return;
+                if (state.globalLock || emp.locked) {
+                    showToast("Locked by Admin.", "error");
+                    return;
+                }
+                const holiday = actionEl.dataset.holiday;
+                const val = actionEl.dataset.value;
+                if (val !== "willing" && val !== "off") return;
+
+                if (holiday === "fitr") {
+                    if (emp.eidFitr === val) return;
+                    emp.eidFitr = val;
+                } else if (holiday === "adha") {
+                    if (emp.eidAdha === val) return;
+                    emp.eidAdha = val;
+                }
+                renderEidPreferenceBar();
+                persistState();
+                showToast("Eid work preference saved.", "success");
             } else if (action === "select-month") {
                 scrollToMonthColumn(Number(actionEl.dataset.month));
             } else if (action === "prev-month") {
@@ -2136,7 +2286,9 @@
                     email: "",
                     pin: null,
                     locked: false,
-                    exemptBlocks: {}
+                    exemptBlocks: {},
+                    eidFitr: null,
+                    eidAdha: null
                 });
                 renderPreservingScroll();
                 persistState();
@@ -2147,6 +2299,16 @@
                 document.getElementById("editEmpPinInput").value = generateRandomFourDigitPin();
             } else if (action === "reset-emp-pin-modal" && state.isAdmin) {
                 document.getElementById("editEmpPinInput").value = "";
+            } else if (action === "reset-emp-eid-modal" && state.isAdmin) {
+                const empId = Number(document.getElementById("editEmpId").value);
+                const emp = state.employees.find(item => item.id === empId);
+                if (emp) {
+                    emp.eidFitr = null;
+                    emp.eidAdha = null;
+                    renderPreservingScroll();
+                    persistState();
+                    showToast(`Reset Eid choices for ${emp.name}.`, "info");
+                }
             } else if (action === "delete-emp-modal" && state.isAdmin) {
                 const delId = Number(document.getElementById("editEmpId").value);
                 if (state.employees.length <= 1) return;
@@ -2238,6 +2400,8 @@
                 state.globalBlocks = {};
                 state.employees.forEach(emp => {
                     emp.exemptBlocks = {};
+                    emp.eidFitr = null;
+                    emp.eidAdha = null;
                 });
                 closeModal("resetModal");
                 renderPreservingScroll();
